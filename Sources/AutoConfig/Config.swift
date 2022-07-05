@@ -101,6 +101,7 @@ var g_appConfig : [String:Any] = {
     
     // 读取 main bundle 对应类
     var mainBundle = Bundle.main
+    print(Bundle.main.bundleIdentifier ?? "")
     if let bundleIdentifier = Bundle.main.bundleIdentifier,
         bundleIdentifier == "com.apple.dt.xctest.tool" {
         // 单元测试使用的 main bundle 不正确
