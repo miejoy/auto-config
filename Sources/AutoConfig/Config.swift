@@ -106,12 +106,13 @@ var g_appConfig : [String:Any] = {
         bundleIdentifier == "com.apple.dt.xctest.tool" {
         // 单元测试使用的 main bundle 不正确
         for aBundle in Bundle.allBundles {
+            print(aBundle.infoDictionary?["CFBundleExecutable"] as Any)
             print(aBundle.resourcePath ?? "")
             if aBundle.resourcePath?.contains(".xctest") ?? false {
                 if let bundleName = aBundle.infoDictionary?[kBundleName] as? String {
                     mainBundle = aBundle
                 }
-                break
+//                break
             }
         }
     }
