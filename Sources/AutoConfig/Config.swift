@@ -129,6 +129,8 @@ var g_appConfig : [String:Any] = {
         print(mainBundle.principalClass as Any)
         print(mainBundle.infoDictionary as Any)
         print(mainBundle.infoDictionary?["CFBundleExecutable"] as Any)
+        print(mainBundle.classNamed("UserConfig") as Any)
+        print(mainBundle.classNamed("AutoConfigTests.UserConfig") as Any)
         if let aClass = mainBundle.classNamed(bundleName + ".UserConfig"),
             let aConfigClass = aClass as? ConfigProtocol.Type {
             aAppConfig.merge(aConfigClass.configs) { (old, new) -> Any in
