@@ -102,35 +102,29 @@ var g_appConfig : [String:Any] = {
     // 读取 main bundle 对应类
     var mainBundle = Bundle.main
     var mainBundleName = mainBundle.infoDictionary?[kBundleName] as? String
-    print(Bundle.main.bundleIdentifier ?? "")
     if let bundleIdentifier = Bundle.main.bundleIdentifier,
         bundleIdentifier == "com.apple.dt.xctest.tool" {
         // 单元测试使用的 main bundle 不正确
         for aBundle in Bundle.allBundles {
-            print(aBundle.resourcePath ?? "")
-            print(aBundle.infoDictionary as Any)
             if aBundle.resourcePath?.contains(".xctest") ?? false {
-                print("===")
                 if let bundleName = aBundle.infoDictionary?[kBundleName] as? String {
                     mainBundle = aBundle
                     mainBundleName = bundleName.replacingOccurrences(of: " ", with: "_")
                 } else if let aClass = aBundle.principalClass {
                     mainBundle = aBundle
-                    if let bundleName = String(describing: aClass).split(separator: ".").first {
-                        mainBundleName = String(bundleName)
+                    if let firstName = String(reflecting: aClass).split(separator: ".").first {
+                        var bundleName = String(firstName)
+                        if !bundleName.hasSuffix("Tests") {
+                            bundleName += "Tests"
+                        }
+                        mainBundleName = bundleName
                     }
                 }
-//                break
+                break
             }
         }
     }
     if let bundleName = mainBundleName {
-        print(bundleName)
-        print(mainBundle.principalClass as Any)
-        print(mainBundle.infoDictionary as Any)
-        print(mainBundle.infoDictionary?["CFBundleExecutable"] as Any)
-        print(mainBundle.classNamed("UserConfig") as Any)
-        print(mainBundle.classNamed("AutoConfigTests.UserConfig") as Any)
         if let aClass = mainBundle.classNamed(bundleName + ".UserConfig"),
             let aConfigClass = aClass as? ConfigProtocol.Type {
             aAppConfig.merge(aConfigClass.configs) { (old, new) -> Any in
