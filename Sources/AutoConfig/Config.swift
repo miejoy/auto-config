@@ -117,7 +117,9 @@ var g_appConfig : [String:Any] = {
     }
     if let bundleName = mainBundle.infoDictionary?[kBundleName] as? String {
         print(bundleName)
+        print(mainBundle.principalClass as Any)
         let useName = bundleName.replacingOccurrences(of: " ", with: "_")
+        print(useName + ".UserConfig")
         if let aClass = mainBundle.classNamed(useName + ".UserConfig"),
             let aConfigClass = aClass as? ConfigProtocol.Type {
             aAppConfig.merge(aConfigClass.configs) { (old, new) -> Any in
