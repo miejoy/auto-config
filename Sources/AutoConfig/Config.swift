@@ -101,6 +101,7 @@ var g_appConfig : [String:Any] = {
     
     // 读取 main bundle 对应类
     var mainBundle = Bundle.main
+    var mainBundleName = mainBundle.infoDictionary?[kBundleName] as? String
     print(Bundle.main.bundleIdentifier ?? "")
     if let bundleIdentifier = Bundle.main.bundleIdentifier,
         bundleIdentifier == "com.apple.dt.xctest.tool" {
@@ -112,19 +113,23 @@ var g_appConfig : [String:Any] = {
                 print("===")
                 if let bundleName = aBundle.infoDictionary?[kBundleName] as? String {
                     mainBundle = aBundle
+                    mainBundleName = bundleName.replacingOccurrences(of: " ", with: "_")
+                } else if let aClass = aBundle.principalClass {
+                    mainBundle = aBundle
+                    if let bundleName = String(describing: aClass).split(separator: ".").first {
+                        mainBundleName = String(bundleName)
+                    }
                 }
 //                break
             }
         }
     }
-    if let bundleName = mainBundle.infoDictionary?[kBundleName] as? String {
+    if let bundleName = mainBundleName {
         print(bundleName)
         print(mainBundle.principalClass as Any)
-        let useName = bundleName.replacingOccurrences(of: " ", with: "_")
-        print(useName + ".UserConfig")
         print(mainBundle.infoDictionary as Any)
         print(mainBundle.infoDictionary?["CFBundleExecutable"] as Any)
-        if let aClass = mainBundle.classNamed(useName + ".UserConfig"),
+        if let aClass = mainBundle.classNamed(bundleName + ".UserConfig"),
             let aConfigClass = aClass as? ConfigProtocol.Type {
             aAppConfig.merge(aConfigClass.configs) { (old, new) -> Any in
                 if old is [String:Any] && type(of: old) == type(of: new) {
