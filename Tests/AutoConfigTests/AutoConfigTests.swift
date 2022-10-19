@@ -1,5 +1,5 @@
 //
-//  Config.swift
+//  AutoConfigTests.swift
 //
 //
 //  Created by 黄磊 on 2022/7/4.
@@ -10,46 +10,179 @@ import XCTest
 @testable import AutoConfig
 
 final class AutoConfigTests: XCTestCase {
-    
-    func testUserConfig() {
         
+    func testUserConfig() {
         let configs = g_appConfig
         
-        XCTAssertEqual(configs["testConfig"] as? String, "test123")
-        XCTAssertEqual(Config.valueOf(ConfigKey.testConfig, ""), "test123")
-        XCTAssertEqual(Config.valueOf(ConfigKey.testConfig) as? String, "test123")
+        XCTAssertEqual(configs[AnyHashable(AnyConfigKey.testConfig)] as? String, "test123")
+        XCTAssertEqual(Config.value(for: .testConfig), "test123")
     }
     
-    func testValueOfKeyPath() {
+    func testLoadConfigOnJson() {
+        let (mainBundle, _) = Config.getMainBundle()
+        let resourceBundleUrl = mainBundle.resourceURL?.appendingPathComponent("auto-config_AutoConfigTests").appendingPathExtension("bundle")
+        let resourceBundle = Bundle(url: resourceBundleUrl!)!
+        let jsonFilePath = resourceBundle.path(forResource: "configs", ofType: "json")!
+        let configPairs = Config.loadConfigsOnJsonFile(jsonFilePath)
         
-        let group = "group"
-        let key = "key"
-        let value = "value"
-        let dic : [String:Any] = [
-            group : [
-                key : value
-            ]
-        ]
-        Config.add(with: dic)
+        let stringKey = ConfigKey<String>("string_key")
+        let stringConfig = configPairs.first { $0.key == AnyHashable(stringKey) }
+        XCTAssertEqual(stringConfig?.data as? String, "test")
         
-        let result = Config.valueOf(keyPath: "\(group).\(key)", "")
+        let intKey = ConfigKey<Int>("int_key")
+        let intConfig = configPairs.first { $0.key == AnyHashable(intKey) }
+        XCTAssertEqual(intConfig?.data as? Int, 1)
         
-        XCTAssertEqual(result, value)
+        let doubleKey = ConfigKey<Double>("double_key")
+        let doubleConfig = configPairs.first { $0.key == AnyHashable(doubleKey) }
+        XCTAssertEqual(doubleConfig?.data as? Double, 1.1)
+        
+        let boolKey = ConfigKey<Bool>("bool_key")
+        let boolConfig = configPairs.first { $0.key == AnyHashable(boolKey) }
+        XCTAssertEqual(boolConfig?.data as? Bool, true)
+        
+        let mapKey = ConfigKey<Set<ConfigPair>>("map_key")
+        let mapConfig = configPairs.first { $0.key == AnyHashable(mapKey) }
+        let mapData = mapConfig!.data as! Set<ConfigPair>
+        let mapSecondKey = ConfigKey<String>("second_string_key")
+        let secondConfig = mapData.first  { $0.key == AnyHashable(mapSecondKey) }
+        XCTAssertEqual(secondConfig?.data as? String, "second_test")
+        
+        let arrKey = ConfigKey<[String]>("array_key")
+        let arrConfig = configPairs.first { $0.key == AnyHashable(arrKey) }
+        XCTAssertEqual(arrConfig?.data as? [String], ["test1", "test2"])
     }
     
-    func testCombine() {
-        XCTAssertEqual(Config.combine(value: "value", otherValue: "otherValue"), "valueotherValue")
+    func testLoadConfigOnPlist() {
+        let (mainBundle, _) = Config.getMainBundle()
+        let resourceBundleUrl = mainBundle.resourceURL?.appendingPathComponent("auto-config_AutoConfigTests").appendingPathExtension("bundle")
+        let resourceBundle = Bundle(url: resourceBundleUrl!)!
+        let plistFilePath = resourceBundle.path(forResource: "configs", ofType: "plist")!
+        let configPairs = Config.loadConfigsOnPlistFile(plistFilePath)
+        
+        let stringKey = ConfigKey<String>("string_key")
+        let stringConfig = configPairs.first { $0.key == AnyHashable(stringKey) }
+        XCTAssertEqual(stringConfig?.data as? String, "test")
+        
+        let intKey = ConfigKey<Int>("int_key")
+        let intConfig = configPairs.first { $0.key == AnyHashable(intKey) }
+        XCTAssertEqual(intConfig?.data as? Int, 1)
+        
+        let doubleKey = ConfigKey<Double>("double_key")
+        let doubleConfig = configPairs.first { $0.key == AnyHashable(doubleKey) }
+        XCTAssertEqual(doubleConfig?.data as? Double, 1.1)
+        
+        let boolKey = ConfigKey<Bool>("bool_key")
+        let boolConfig = configPairs.first { $0.key == AnyHashable(boolKey) }
+        XCTAssertEqual(boolConfig?.data as? Bool, true)
+        
+        let mapKey = ConfigKey<Set<ConfigPair>>("map_key")
+        let mapConfig = configPairs.first { $0.key == AnyHashable(mapKey) }
+        let mapData = mapConfig!.data as! Set<ConfigPair>
+        let mapSecondKey = ConfigKey<String>("second_string_key")
+        let secondConfig = mapData.first  { $0.key == AnyHashable(mapSecondKey) }
+        XCTAssertEqual(secondConfig?.data as? String, "second_test")
+        
+        let arrKey = ConfigKey<[String]>("array_key")
+        let arrConfig = configPairs.first { $0.key == AnyHashable(arrKey) }
+        XCTAssertEqual(arrConfig?.data as? [String], ["test1", "test2"])
+    }
+    
+    func testSetAndGetStringValue() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.stringKey))
+        
+        XCTAssertNil(Config.value(for: .stringKey))
+        
+        let stringValue = "test1"
+        Config.set(stringValue, for: .stringKey)
+        XCTAssertNotNil(Config.value(for: .stringKey))
+        XCTAssertEqual(Config.value(for: .stringKey), stringValue)
+    }
+    
+    func testSetAndGetIntValue() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.intKey))
+        
+        XCTAssertNil(Config.value(for: .intKey))
+        
+        let intValue = 1
+        Config.set(intValue, for: .intKey)
+        XCTAssertNotNil(Config.value(for: .intKey))
+        XCTAssertEqual(Config.value(for: .intKey), intValue)
+    }
+    
+    func testSetAndGetDoubleValue() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.doubleKey))
+        
+        XCTAssertNil(Config.value(for: .doubleKey))
+        
+        let doubleKey = 1.1
+        Config.set(doubleKey, for: .doubleKey)
+        XCTAssertNotNil(Config.value(for: .doubleKey))
+        XCTAssertEqual(Config.value(for: .doubleKey), doubleKey)
+    }
+    
+    func testSetAndGetBoolValue() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.boolKey))
+        
+        XCTAssertNil(Config.value(for: .boolKey))
+        
+        let boolKey = true
+        Config.set(boolKey, for: .boolKey)
+        XCTAssertNotNil(Config.value(for: .boolKey))
+        XCTAssertEqual(Config.value(for: .boolKey), boolKey)        
+    }
+    
+    func testSetAndGetKeyPathValue() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.objectKey))
+        
+        XCTAssertNil(Config.value(for: .objectKey))
+        
+        let keyPath = ConfigKey<String>.objectKey.append(.stringKey)
+        let stringValue = "test2"
+        Config.set(stringValue, with: keyPath)
+        XCTAssertNotNil(Config.value(with: keyPath))
+        XCTAssertEqual(Config.value(with: keyPath), stringValue)
+    }
+    
+    func testSetGetKeyPathNotFound() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.objectKey))
+        
+        XCTAssertNil(Config.value(for: .objectKey))
+        
+        let keyPath = ConfigKey<String>.objectKey.append(.intKey)
+        XCTAssertNil(Config.value(with: keyPath))
+    }
+    
+    func testGetUseDefault() {
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.stringKey))
+        
+        XCTAssertNil(Config.value(for: .stringKey))
+        let testValue = "testValue"
+        XCTAssertEqual(Config.value(for: .stringKey, testValue), testValue)
+        
+        g_appConfig.removeValue(forKey: AnyHashable(AnyConfigKey.objectKey))
+        let keyPath = ConfigKey<String>.objectKey.append(.intKey)
+        let intValue = 789
+        XCTAssertEqual(Config.value(with: keyPath, intValue), intValue)
     }
 }
 
 extension ConfigKey {
-    static var testConfig = "testConfig"
+    static var testConfig: ConfigKey<String> { .init("testConfig") }
+    
+    static var stringKey: ConfigKey<String> { .init("stringKey") }
+    static var intKey: ConfigKey<Int> { .init("intKey") }
+    static var doubleKey: ConfigKey<Double> { .init("doubleKey") }
+    static var boolKey: ConfigKey<Bool> { .init("boolKey") }
+    
+    static var objectKey: ConfigKey<String> { .init("objectKey") }
 }
 
 class UserConfig: ConfigProtocol {
 
-    static var configs: [String : Any] = [
-
-        "testConfig" : "test123"
+    static var configs: Set<ConfigPair> = [
+        .init(.testConfig,  "test123"),
+        .init(.appId,       "123"),
+        .init(.appId,       "456") // 这个将不会被应用
     ]
 }

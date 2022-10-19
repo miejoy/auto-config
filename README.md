@@ -40,7 +40,7 @@ import AutoConfig
 
 final class UserConfig: ConfigProtocol {
     static var configs: [String : Any] = [
-        ConfigKey.kAppId        : "123456789",
+        .init(.appId, "123456789")
     ]
 }
 ```
@@ -50,7 +50,7 @@ final class UserConfig: ConfigProtocol {
 ```swift
 import AutoConfig
 
-let appId = Config.valueOf(ConfigKey.kAppId, "")
+let appId = Config.value(for: ConfigKey.kAppId, "")
 ```
 
 ## 作者

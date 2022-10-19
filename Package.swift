@@ -29,6 +29,11 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "AutoConfigTests",
-            dependencies: ["AutoConfig"]),
+            dependencies: ["AutoConfig"],
+            resources: [
+                .process("configs.plist"),
+                .process("configs.json")
+            ]
+        ),
     ]
 )

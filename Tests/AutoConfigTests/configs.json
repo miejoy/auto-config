@@ -1,0 +1,13 @@
+{
+    "string_key": "test",
+    "int_key": 1,
+    "double_key": 1.1,
+    "bool_key": true,
+    "map_key": {
+        "second_string_key": "second_test"
+    },
+    "array_key": [
+        "test1",
+        "test2"
+    ]
+}
