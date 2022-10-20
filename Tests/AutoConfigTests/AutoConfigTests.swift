@@ -19,9 +19,7 @@ final class AutoConfigTests: XCTestCase {
     }
     
     func testLoadConfigOnJson() {
-        let (mainBundle, _) = Config.getMainBundle()
-        let resourceBundleUrl = mainBundle.resourceURL?.appendingPathComponent("auto-config_AutoConfigTests").appendingPathExtension("bundle")
-        let resourceBundle = Bundle(url: resourceBundleUrl!)!
+        let resourceBundle = Bundle.module
         let jsonFilePath = resourceBundle.path(forResource: "configs", ofType: "json")!
         let configPairs = Config.loadConfigsOnJsonFile(jsonFilePath)
         
@@ -54,9 +52,7 @@ final class AutoConfigTests: XCTestCase {
     }
     
     func testLoadConfigOnPlist() {
-        let (mainBundle, _) = Config.getMainBundle()
-        let resourceBundleUrl = mainBundle.resourceURL?.appendingPathComponent("auto-config_AutoConfigTests").appendingPathExtension("bundle")
-        let resourceBundle = Bundle(url: resourceBundleUrl!)!
+        let resourceBundle = Bundle.module
         let plistFilePath = resourceBundle.path(forResource: "configs", ofType: "plist")!
         let configPairs = Config.loadConfigsOnPlistFile(plistFilePath)
         
