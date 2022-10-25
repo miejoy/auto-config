@@ -45,8 +45,8 @@ final public class Config {
     /// - Parameter defaultValue: 读取失败使用的默认值
     /// - Returns Data: 返回需要的配置值
     @inlinable
-    public static func value<Data>(for key: ConfigKey<Data>, _ defaultValue: Data) -> Data {
-        value(for: key) ?? defaultValue
+    public static func value<Data>(for key: ConfigKey<Data>, _ defaultValue: @autoclosure () -> Data) -> Data {
+        value(for: key) ?? defaultValue()
     }
     
     /// 通过 ConfigKeyPath 添加配置，建议只在启动阶段使用
@@ -84,8 +84,8 @@ final public class Config {
     /// - Parameter defaultValue: 读取失败使用的默认值
     /// - Returns Data?: 返回需要的配置值，如果不存在返回 nil
     @inlinable
-    public static func value<Data>(with keyPath: ConfigKeyPath<Data>, _ defaultValue: Data) -> Data {
-        value(with: keyPath) ?? defaultValue
+    public static func value<Data>(with keyPath: ConfigKeyPath<Data>, _ defaultValue: @autoclosure () -> Data) -> Data {
+        value(with: keyPath) ?? defaultValue()
     }
 }
 
