@@ -43,9 +43,18 @@ final class ConfigKeyTests: XCTestCase {
     func testKeyPath() {
         let key1 = ConfigKey<String>("key1")
         let key2 = ConfigKey<String>("key2")
-        
+
         let keyPath = key1.append(key2).append(ConfigKey<Int>())
         
         XCTAssertEqual(keyPath.description, "key1.key2.<Int>")
+    }
+    
+    func testConfigPairWithKeyPath() {
+        let pair1 = ConfigPair.make(keyPath: .webAPIDeviceRegister, "test1")
+        let pair2 = ConfigPair.group("WebAPI", [.make(.deviceRegister, "test2")])
+        
+        XCTAssertEqual(pair1, pair2)
+        
+        XCTAssertEqual(pair1.hashValue, pair2.hashValue)
     }
 }

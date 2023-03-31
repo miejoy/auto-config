@@ -14,12 +14,16 @@ let kBundleName = "CFBundleName"
 /// 配置协议
 public protocol ConfigProtocol {
     /// 重新这个类设置各种配置
-    static var configs : Set<ConfigPair> { get }
+    static var configs : [ConfigPair] { get }
 }
 
 public extension ConfigKey where Data == String {
     /// 应用 ID
     static let appId = ConfigKey<String>("appId")
+}
+
+extension ConfigKeyPath where Data == String {
+    static var webAPIDeviceRegister = ConfigKey("WebAPI").append(ConfigKey<String>("DeviceRegister"))
 }
 
 final public class Config {
@@ -54,10 +58,10 @@ final public class Config {
     /// - Parameter value: 设置配置对应的值
     /// - Parameter keyPath: 设置配置对应的 KeyPath
     public static func set<Data>(_ value: Data, with keyPath: ConfigKeyPath<Data>) {
-        let configPairSet = keyPath.prevPaths.reversed().reduce(Set<ConfigPair>([ConfigPair(keyPath.key, value)])) { partialResult, configId in
-            Set<ConfigPair>([ConfigPair(ConfigKey<Set<ConfigPair>>(configId), partialResult)])
+        let configPair = keyPath.prevPaths.reversed().reduce(ConfigPair.make(keyPath.key, value)) { partialResult, path in
+            ConfigPair.group(path, [partialResult])
         }
-        merge(&g_appConfig, with: configPairSet)
+        merge(&g_appConfig, with: [configPair])
     }
     
     /// 读取对应 keyPath 的配置
@@ -144,7 +148,7 @@ extension Config {
         return (mainBundle, mainBundleName)
     }
     
-    static func loadConfigsOnJsonFile(_ filePath: String) -> Set<ConfigPair> {
+    static func loadConfigsOnJsonFile(_ filePath: String) -> [ConfigPair] {
         guard FileManager.default.fileExists(atPath: filePath),
               let data = FileManager.default.contents(atPath: filePath) else {
             return []
@@ -156,7 +160,7 @@ extension Config {
         return []
     }
     
-    static func loadConfigsOnPlistFile(_ filePath: String) -> Set<ConfigPair> {
+    static func loadConfigsOnPlistFile(_ filePath: String) -> [ConfigPair] {
         guard FileManager.default.fileExists(atPath: filePath),
               let data = FileManager.default.contents(atPath: filePath) else {
             return []
@@ -169,41 +173,41 @@ extension Config {
         return []
     }
     
-    static func convertDicToConfigPairSet(_ dic: [String: Any]) -> Set<ConfigPair> {
-        dic.reduce(into: Set<ConfigPair>()) { partialResult, pair in
+    static func convertDicToConfigPairSet(_ dic: [String: Any]) -> [ConfigPair] {
+        dic.reduce(into: [ConfigPair]()) { partialResult, pair in
             if let string = pair.value as? String {
-                partialResult.insert(.init(.init(pair.key), string))
+                partialResult.append(.make(.init(pair.key), string))
             } else if let int = pair.value as? Int {
                 // 可能是 NSNumber 的 bool
                 if let number = pair.value as? NSNumber,
                    type(of: number) == type(of: NSNumber(booleanLiteral: true)) {
-                    partialResult.insert(.init(.init(pair.key), number.boolValue))
+                    partialResult.append(.make(.init(pair.key), number.boolValue))
                 } else {
-                    partialResult.insert(.init(.init(pair.key), int))
+                    partialResult.append(.make(.init(pair.key), int))
                 }
             } else if let bool = pair.value as? Bool {
-                partialResult.insert(.init(.init(pair.key), bool))
+                partialResult.append(.make(.init(pair.key), bool))
             } else if let double = pair.value as? Double {
-                partialResult.insert(.init(.init(pair.key), double))
+                partialResult.append(.make(.init(pair.key), double))
             } else if let map = pair.value as? [String:Any] {
-                partialResult.insert(.init(.init(pair.key), convertDicToConfigPairSet(map)))
+                partialResult.append(.make(.init(pair.key), convertDicToConfigPairSet(map)))
             } else if let array = pair.value as? [Any] {
                 if let arrayString = array as? [String] {
-                    partialResult.insert(.init(.init(pair.key), arrayString))
+                    partialResult.append(.make(.init(pair.key), arrayString))
                 } else if let arrayInt = array as? [Int] {
-                    partialResult.insert(.init(.init(pair.key), arrayInt))
+                    partialResult.append(.make(.init(pair.key), arrayInt))
                 } else if let arrayBool = array as? [Bool] {
-                    partialResult.insert(.init(.init(pair.key), arrayBool))
+                    partialResult.append(.make(.init(pair.key), arrayBool))
                 } else if let arrayDouble = array as? [Double] {
-                    partialResult.insert(.init(.init(pair.key), arrayDouble))
+                    partialResult.append(.make(.init(pair.key), arrayDouble))
                 }
             }
         }
     }
     
-    static func merge(_ appConfig: inout [AnyHashable: Any], with configPairs: Set<ConfigPair>) {
+    static func merge(_ appConfig: inout [AnyHashable: Any], with configPairs: [ConfigPair]) {
         configPairs.forEach { configPair in
-            if let nextData = configPair.data as? Set<ConfigPair> {
+            if let nextData = configPair.data as? [ConfigPair] {
                 // 递归
                 var nextConfidDic: [AnyHashable: Any] = appConfig[configPair.key] as? [AnyHashable: Any] ?? [:]
                 merge(&nextConfidDic, with: nextData)

@@ -26,10 +26,21 @@ public struct ConfigPair: Hashable {
     /// - Parameter configKey: 配置对应 key
     /// - Parameter configKey: 配置对应 值
     /// - Returns Self: 返回构造好的配置对
-    public init<Data>(_ configKey: ConfigKey<Data>, _ data: Data) {
-        self.init(key: AnyHashable(configKey), configId: configKey.configId, data: data, dataType: Data.self)
+    public static func make<Data>(_ configKey: ConfigKey<Data>, _ data: Data) -> Self {
+        return self.init(key: AnyHashable(configKey), configId: configKey.configId, data: data, dataType: Data.self)
     }
-        
+    
+    public static func make<Data>(keyPath configKeyPath: ConfigKeyPath<Data>, _ data: Data) -> Self {
+        return configKeyPath.prevPaths.reversed().reduce(ConfigPair.make(configKeyPath.key, data)) { partialResult, path in
+            ConfigPair.group(path, [partialResult])
+        }
+    }
+    
+    public static func group(_ groupKey: String, _ data: [ConfigPair]) -> Self {
+        let configKey = ConfigKey<[ConfigPair]>(groupKey)
+        return self.init(key: AnyHashable(configKey), configId: configKey.configId, data: data, dataType: Set<ConfigPair>.self)
+    }
+    
     public func hash(into hasher: inout Hasher) {
         hasher.combine(key.hashValue)
     }

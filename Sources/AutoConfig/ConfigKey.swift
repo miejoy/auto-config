@@ -25,6 +25,11 @@ public struct ConfigKey<Data>: Hashable, CustomStringConvertible {
 public struct ConfigKeyPath<Data>: Hashable, CustomStringConvertible {
     var prevPaths: [String]
     var key: ConfigKey<Data>
+    
+    public init(prevPaths: [String], key: ConfigKey<Data>) {
+        self.prevPaths = prevPaths
+        self.key = key
+    }
         
     public var description: String {
         prevPaths.joined(separator: ".") + "." + key.description

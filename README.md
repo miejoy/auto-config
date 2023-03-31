@@ -10,8 +10,8 @@ AutoConfig 主要是为其他模块提供自动加载主模块设置的配置信
 ## 依赖
 
 - iOS 13.0+ / macOS 10.15+
-- Xcode 12.0+
-- Swift 5.2+
+- Xcode 14.0+
+- Swift 5.7+
 
 ## 简介
 
@@ -33,14 +33,35 @@ dependencies: [
 
 ## 使用
 
-### 添加自动配置
+### 定义一个配置
+在项目中的通用模块定义配置，如下
+```swift
+import AutoConfig
 
+// 配置 Key
+extension ConfigKey where Data == String {
+    /// 应用 ID
+    static let appId = ConfigKey<String>("appId")
+    /// 设备注册接口
+    static let deviceRegister = ConfigKey<String>("deviceRegister")
+}
+// 配置 KeyPath
+extension ConfigKeyPath where Data == String {
+    static var webAPIDeviceRegister: ConfigKeyPath<String> = .init(prevPaths: ["WebAPI"], key: .deviceRegister)
+}
+```
+
+### 添加自动配置
+在主工程中添加自动配置类，类名必须是 UserConfig，并且继承 ConfigProtocol，定义如下：
 ```swift
 import AutoConfig
 
 final class UserConfig: ConfigProtocol {
     static var configs: [String : Any] = [
-        .init(.appId, "123456789")
+        .make(.appId, "123456789"),
+        .group("WebAPI", [
+            .make(.deviceRegister, "Device.Register")
+        ]),
     ]
 }
 ```
@@ -51,6 +72,8 @@ final class UserConfig: ConfigProtocol {
 import AutoConfig
 
 let appId = Config.value(for: ConfigKey.kAppId, "")
+
+let deviceRegister = Config.value(with: .webAPIDeviceRegister, "")
 ```
 
 ## 作者
