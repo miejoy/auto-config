@@ -42,7 +42,7 @@ public struct ConfigPair: Hashable {
     }
     
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(key.hashValue)
+        hasher.combine(key)
     }
     
     public static func == (lhs: Self, rhs: Self) -> Bool {
