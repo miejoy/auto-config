@@ -1,6 +1,6 @@
 # AutoConfig
 
-AutoConfig 主要是为其他模块提供自动加载主模块设置的配置信息。
+AutoConfig 主要是为其他模块在启动时提供自动加载主模块设置的配置信息。启动流程完成后不建议再修改配置。
 
 [![Swift](https://github.com/miejoy/auto-config/actions/workflows/test.yml/badge.svg)](https://github.com/miejoy/auto-config/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/miejoy/auto-config/branch/main/graph/badge.svg)](https://codecov.io/gh/miejoy/auto-config)
@@ -16,7 +16,7 @@ AutoConfig 主要是为其他模块提供自动加载主模块设置的配置信
 ## 简介
 
 该模块会自动读取加载主项目中配置信息，会按照如下顺序加载：
-1、先读取项目中 config.plist 配置的信息
+1、先读取项目中 configs.plist 或 configs.json 配置的信息
 2、载读取主项目中 UserConfig 配置的信息
 
 ## 安装
@@ -57,7 +57,7 @@ extension ConfigKeyPath where Data == String {
 import AutoConfig
 
 final class UserConfig: ConfigProtocol {
-    static var configs: [String : Any] = [
+    static var configs: [ConfigPair] = [
         .make(.appId, "123456789"),
         .group("WebAPI", [
             .make(.deviceRegister, "Device.Register")
@@ -71,7 +71,7 @@ final class UserConfig: ConfigProtocol {
 ```swift
 import AutoConfig
 
-let appId = Config.value(for: ConfigKey.kAppId, "")
+let appId = Config.value(for: .appId, "")
 
 let deviceRegister = Config.value(with: .webAPIDeviceRegister, "")
 ```
