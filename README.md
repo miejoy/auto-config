@@ -39,14 +39,14 @@ dependencies: [
 import AutoConfig
 
 // 配置 Key
-extension ConfigKey where Data == String {
+extension ConfigKey where Value == String {
     /// 应用 ID
     static let appId = ConfigKey<String>("appId")
     /// 设备注册接口
     static let deviceRegister = ConfigKey<String>("deviceRegister")
 }
 // 配置 KeyPath
-extension ConfigKeyPath where Data == String {
+extension ConfigKeyPath where Value == String {
     static var webAPIDeviceRegister: ConfigKeyPath<String> = .init(prevPaths: ["WebAPI"], key: .deviceRegister)
 }
 ```

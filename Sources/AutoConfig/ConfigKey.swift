@@ -8,25 +8,25 @@
 import Foundation
 
 /// 配置使用 key
-public struct ConfigKey<Data>: Hashable, CustomStringConvertible {
-    let configId: String
+public struct ConfigKey<Value>: Hashable, CustomStringConvertible {
+    let name: String
     
     /// 初始化配置 key
-    public init(_ configId: String = "") {
-        self.configId = configId
+    public init(_ name: String = "") {
+        self.name = name
     }
     
     public var description: String {
-        "\(configId)<\(String(describing: Data.self).replacingOccurrences(of: "()", with: "Void"))>"
+        "\(name)<\(String(describing: Value.self).replacingOccurrences(of: "()", with: "Void"))>"
     }
 }
 
 /// 配置使用 KeyPath
-public struct ConfigKeyPath<Data>: Hashable, CustomStringConvertible {
+public struct ConfigKeyPath<Value>: Hashable, CustomStringConvertible {
     var prevPaths: [String]
-    var key: ConfigKey<Data>
+    var key: ConfigKey<Value>
     
-    public init(prevPaths: [String], key: ConfigKey<Data>) {
+    public init(prevPaths: [String], key: ConfigKey<Value>) {
         self.prevPaths = prevPaths
         self.key = key
     }
@@ -36,17 +36,17 @@ public struct ConfigKeyPath<Data>: Hashable, CustomStringConvertible {
     }
 }
 
-extension ConfigKey where Data == String {
+extension ConfigKey where Value == String {
     /// 拼接下一级 key
-    public func append<Data>(_ key: ConfigKey<Data>) -> ConfigKeyPath<Data> {
-        .init(prevPaths: [configId], key: key)
+    public func append<Value>(_ key: ConfigKey<Value>) -> ConfigKeyPath<Value> {
+        .init(prevPaths: [name], key: key)
     }
 }
 
-extension ConfigKeyPath where Data == String {
+extension ConfigKeyPath where Value == String {
     /// 拼接下一级 key
-    public func append<Data>(_ key: ConfigKey<Data>) -> ConfigKeyPath<Data> {
-        .init(prevPaths: prevPaths + [self.key.configId] , key: key)
+    public func append<Value>(_ key: ConfigKey<Value>) -> ConfigKeyPath<Value> {
+        .init(prevPaths: prevPaths + [self.key.name] , key: key)
     }
 }
 

@@ -57,4 +57,17 @@ final class ConfigKeyTests: XCTestCase {
         
         XCTAssertEqual(pair1.hashValue, pair2.hashValue)
     }
+    
+    func testVoidConfigKey() {
+        let name = "name"
+        let key1 = ConfigKey<Void>(name)
+        // let key2 = ConfigKey<[Void]>(name)
+        // let key3 = ConfigKey<[String:Void]>(name)
+        // let key4 = ConfigKey<[String:(Void, Void)]>(name)
+        
+        XCTAssertEqual(key1.description, "name<Void>")
+        // XCTAssertEqual(key2.description, "name<[Void]>")
+        // XCTAssertEqual(key3.description, "name<[String:Void]>")
+        // XCTAssertEqual(key4.description, "name<[String:(Void, Void)]>")
+    }
 }

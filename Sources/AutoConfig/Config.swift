@@ -14,42 +14,38 @@ let kBundleName = "CFBundleName"
 /// 配置协议
 public protocol ConfigProtocol {
     /// 重新这个类设置各种配置
-    static var configs : [ConfigPair] { get }
+    static var configs: [ConfigPair] { get }
 }
 
-public extension ConfigKey where Data == String {
+public extension ConfigKey where Value == String {
     /// 应用 ID
     static let appId = ConfigKey<String>("appId")
 }
 
-extension ConfigKeyPath where Data == String {
-    static var webAPIDeviceRegister = ConfigKey("WebAPI").append(ConfigKey<String>("DeviceRegister"))
-}
-
-final public class Config {
+public enum Config {
     /// 添加配置，建议只在启动阶段使用
     ///
     /// - Parameter value: 设置配置对应的值
     /// - Parameter key: 设置配置对应的 key
-    public static func set<Data>(_ value: Data, for key: ConfigKey<Data>) {
+    public static func set<Value>(_ value: Value, for key: ConfigKey<Value>) {
         g_appConfig[AnyHashable(key)] = value
     }
     
     /// 读取对应 key 的配置
     ///
     /// - Parameter key: 读取配置使用的 key
-    /// - Returns Data?: 返回需要的配置值，如果不存在返回 nil
-    public static func value<Data>(for key: ConfigKey<Data>) -> Data? {
-        g_appConfig[AnyHashable(key)] as? Data
+    /// - Returns Value?: 返回需要的配置值，如果不存在返回 nil
+    public static func value<Value>(for key: ConfigKey<Value>) -> Value? {
+        g_appConfig[AnyHashable(key)] as? Value
     }
     
     /// 读取对应 key 的配置
     ///
     /// - Parameter key: 读取配置使用的 key
     /// - Parameter defaultValue: 读取失败使用的默认值
-    /// - Returns Data: 返回需要的配置值
+    /// - Returns Value: 返回需要的配置值
     @inlinable
-    public static func value<Data>(for key: ConfigKey<Data>, _ defaultValue: @autoclosure () -> Data) -> Data {
+    public static func value<Value>(for key: ConfigKey<Value>, _ defaultValue: @autoclosure () -> Value) -> Value {
         value(for: key) ?? defaultValue()
     }
     
@@ -57,7 +53,7 @@ final public class Config {
     ///
     /// - Parameter value: 设置配置对应的值
     /// - Parameter keyPath: 设置配置对应的 KeyPath
-    public static func set<Data>(_ value: Data, with keyPath: ConfigKeyPath<Data>) {
+    public static func set<Value>(_ value: Value, with keyPath: ConfigKeyPath<Value>) {
         let configPair = keyPath.prevPaths.reversed().reduce(ConfigPair.make(keyPath.key, value)) { partialResult, path in
             ConfigPair.group(path, [partialResult])
         }
@@ -67,11 +63,11 @@ final public class Config {
     /// 读取对应 keyPath 的配置
     ///
     /// - Parameter keyPath: 读取配置使用的 KeyPath
-    /// - Returns Data?: 返回需要的配置值，如果不存在返回 nil
-    public static func value<Data>(with keyPath: ConfigKeyPath<Data>) -> Data? {
+    /// - Returns Value?: 返回需要的配置值，如果不存在返回 nil
+    public static func value<Value>(with keyPath: ConfigKeyPath<Value>) -> Value? {
         var topDic: [AnyHashable: Any]? = g_appConfig
-        _ = keyPath.prevPaths.first { configId in
-            if let nextDic = topDic?[AnyHashable(ConfigKey<[AnyHashable:Any]>(configId))] as? [AnyHashable: Any] {
+        _ = keyPath.prevPaths.first { name in
+            if let nextDic = topDic?[AnyHashable(ConfigKey<[AnyHashable:Any]>(name))] as? [AnyHashable: Any] {
                 topDic = nextDic
                 return false
             } else {
@@ -79,20 +75,21 @@ final public class Config {
                 return true
             }
         }
-        return topDic?[AnyHashable(keyPath.key)] as? Data
+        return topDic?[AnyHashable(keyPath.key)] as? Value
     }
     
     /// 读取对应 keyPath 的配置
     ///
     /// - Parameter keyPath: 读取配置使用的 KeyPath
     /// - Parameter defaultValue: 读取失败使用的默认值
-    /// - Returns Data?: 返回需要的配置值，如果不存在返回 nil
+    /// - Returns Value?: 返回需要的配置值，如果不存在返回 nil
     @inlinable
-    public static func value<Data>(with keyPath: ConfigKeyPath<Data>, _ defaultValue: @autoclosure () -> Data) -> Data {
+    public static func value<Value>(with keyPath: ConfigKeyPath<Value>, _ defaultValue: @autoclosure () -> Value) -> Value {
         value(with: keyPath) ?? defaultValue()
     }
 }
 
+/// 全局 app 配置信息（注意：这里有线程安全问题）
 var g_appConfig : [AnyHashable: Any] = {
     var aAppConfig : [AnyHashable: Any] = [:]
     
@@ -207,13 +204,13 @@ extension Config {
     
     static func merge(_ appConfig: inout [AnyHashable: Any], with configPairs: [ConfigPair]) {
         configPairs.forEach { configPair in
-            if let nextData = configPair.data as? [ConfigPair] {
+            if let nextValue = configPair.value as? [ConfigPair] {
                 // 递归
                 var nextConfidDic: [AnyHashable: Any] = appConfig[configPair.key] as? [AnyHashable: Any] ?? [:]
-                merge(&nextConfidDic, with: nextData)
-                appConfig[ConfigKey<[AnyHashable:Any]>(configPair.configId)] = nextConfidDic
+                merge(&nextConfidDic, with: nextValue)
+                appConfig[ConfigKey<[AnyHashable:Any]>(configPair.name)] = nextConfidDic
             } else {
-                appConfig[configPair.key] = configPair.data
+                appConfig[configPair.key] = configPair.value
             }
         }
     }

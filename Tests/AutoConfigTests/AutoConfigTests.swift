@@ -27,30 +27,30 @@ final class AutoConfigTests: XCTestCase {
         
         let stringKey = ConfigKey<String>("string_key")
         let stringConfig = configPairs.first { $0.key == AnyHashable(stringKey) }
-        XCTAssertEqual(stringConfig?.data as? String, "test")
+        XCTAssertEqual(stringConfig?.value as? String, "test")
         
         let intKey = ConfigKey<Int>("int_key")
         let intConfig = configPairs.first { $0.key == AnyHashable(intKey) }
-        XCTAssertEqual(intConfig?.data as? Int, 1)
+        XCTAssertEqual(intConfig?.value as? Int, 1)
         
         let doubleKey = ConfigKey<Double>("double_key")
         let doubleConfig = configPairs.first { $0.key == AnyHashable(doubleKey) }
-        XCTAssertEqual(doubleConfig?.data as? Double, 1.1)
+        XCTAssertEqual(doubleConfig?.value as? Double, 1.1)
         
         let boolKey = ConfigKey<Bool>("bool_key")
         let boolConfig = configPairs.first { $0.key == AnyHashable(boolKey) }
-        XCTAssertEqual(boolConfig?.data as? Bool, true)
+        XCTAssertEqual(boolConfig?.value as? Bool, true)
         
         let mapKey = ConfigKey<[ConfigPair]>("map_key")
         let mapConfig = configPairs.first { $0.key == AnyHashable(mapKey) }
-        let mapData = mapConfig!.data as! [ConfigPair]
+        let mapData = mapConfig!.value as! [ConfigPair]
         let mapSecondKey = ConfigKey<String>("second_string_key")
         let secondConfig = mapData.first  { $0.key == AnyHashable(mapSecondKey) }
-        XCTAssertEqual(secondConfig?.data as? String, "second_test")
+        XCTAssertEqual(secondConfig?.value as? String, "second_test")
         
         let arrKey = ConfigKey<[String]>("array_key")
         let arrConfig = configPairs.first { $0.key == AnyHashable(arrKey) }
-        XCTAssertEqual(arrConfig?.data as? [String], ["test1", "test2"])
+        XCTAssertEqual(arrConfig?.value as? [String], ["test1", "test2"])
     }
     
     func testLoadConfigOnPlist() {
@@ -60,30 +60,30 @@ final class AutoConfigTests: XCTestCase {
         
         let stringKey = ConfigKey<String>("string_key")
         let stringConfig = configPairs.first { $0.key == AnyHashable(stringKey) }
-        XCTAssertEqual(stringConfig?.data as? String, "test")
+        XCTAssertEqual(stringConfig?.value as? String, "test")
         
         let intKey = ConfigKey<Int>("int_key")
         let intConfig = configPairs.first { $0.key == AnyHashable(intKey) }
-        XCTAssertEqual(intConfig?.data as? Int, 1)
+        XCTAssertEqual(intConfig?.value as? Int, 1)
         
         let doubleKey = ConfigKey<Double>("double_key")
         let doubleConfig = configPairs.first { $0.key == AnyHashable(doubleKey) }
-        XCTAssertEqual(doubleConfig?.data as? Double, 1.1)
+        XCTAssertEqual(doubleConfig?.value as? Double, 1.1)
         
         let boolKey = ConfigKey<Bool>("bool_key")
         let boolConfig = configPairs.first { $0.key == AnyHashable(boolKey) }
-        XCTAssertEqual(boolConfig?.data as? Bool, true)
+        XCTAssertEqual(boolConfig?.value as? Bool, true)
         
         let mapKey = ConfigKey<[ConfigPair]>("map_key")
         let mapConfig = configPairs.first { $0.key == AnyHashable(mapKey) }
-        let mapData = mapConfig!.data as! [ConfigPair]
+        let mapData = mapConfig!.value as! [ConfigPair]
         let mapSecondKey = ConfigKey<String>("second_string_key")
         let secondConfig = mapData.first  { $0.key == AnyHashable(mapSecondKey) }
-        XCTAssertEqual(secondConfig?.data as? String, "second_test")
+        XCTAssertEqual(secondConfig?.value as? String, "second_test")
         
         let arrKey = ConfigKey<[String]>("array_key")
         let arrConfig = configPairs.first { $0.key == AnyHashable(arrKey) }
-        XCTAssertEqual(arrConfig?.data as? [String], ["test1", "test2"])
+        XCTAssertEqual(arrConfig?.value as? [String], ["test1", "test2"])
     }
     
     func testSetAndGetStringValue() {
@@ -178,7 +178,11 @@ extension ConfigKey {
     static var deviceRegister: ConfigKey<String> { .init("deviceRegister") }
 }
 
-extension ConfigKeyPath where Data == String {
+extension ConfigKeyPath where Value == String {
+    static var webAPIDeviceRegister1 = ConfigKey("WebAPI").append(ConfigKey<String>("DeviceRegister"))
+}
+
+extension ConfigKeyPath where Value == String {
     static var webAPIDeviceRegister: ConfigKeyPath<String> = .init(prevPaths: ["WebAPI"], key: .deviceRegister)
 }
 
