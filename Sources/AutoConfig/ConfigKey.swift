@@ -38,14 +38,14 @@ public struct ConfigKeyPath<Value>: Hashable, CustomStringConvertible {
 
 extension ConfigKey where Value == String {
     /// 拼接下一级 key
-    public func append<Value>(_ key: ConfigKey<Value>) -> ConfigKeyPath<Value> {
+    public func append<NextValue>(_ key: ConfigKey<NextValue>) -> ConfigKeyPath<NextValue> {
         .init(prevPaths: [name], key: key)
     }
 }
 
 extension ConfigKeyPath where Value == String {
     /// 拼接下一级 key
-    public func append<Value>(_ key: ConfigKey<Value>) -> ConfigKeyPath<Value> {
+    public func append<NextValue>(_ key: ConfigKey<NextValue>) -> ConfigKeyPath<NextValue> {
         .init(prevPaths: prevPaths + [self.key.name] , key: key)
     }
 }
