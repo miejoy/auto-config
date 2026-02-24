@@ -241,7 +241,7 @@ extension DispatchQueue {
     }()
     
     /// 在 config 队列中执行
-    public static func syncOnConfigQueue<T>(execute work: () throws -> T) rethrows -> T {
+    static func syncOnConfigQueue<T>(execute work: () throws -> T) rethrows -> T {
         if DispatchQueue.getSpecific(key: Self.configQueueDispatchSpecificKey) == Self.configQueue.label {
             return try work()
         }
