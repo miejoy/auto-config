@@ -8,7 +8,7 @@
 import Foundation
 
 /// 配置使用 key
-public struct ConfigKey<Value>: Hashable, CustomStringConvertible {
+public struct ConfigKey<Value>: Hashable, CustomStringConvertible, Sendable {
     let name: String
     
     /// 初始化配置 key
@@ -22,7 +22,7 @@ public struct ConfigKey<Value>: Hashable, CustomStringConvertible {
 }
 
 /// 配置使用 KeyPath
-public struct ConfigKeyPath<Value>: Hashable, CustomStringConvertible {
+public struct ConfigKeyPath<Value>: Hashable, CustomStringConvertible, Sendable {
     var prevPaths: [String]
     var key: ConfigKey<Value>
     

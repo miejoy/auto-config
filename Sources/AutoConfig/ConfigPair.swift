@@ -8,7 +8,7 @@
 import Foundation
 
 /// 配置对
-public struct ConfigPair: Hashable {
+public struct ConfigPair: Hashable, @unchecked Sendable {
     let key: AnyHashable
     let name: String
     let value: Any
@@ -26,11 +26,11 @@ public struct ConfigPair: Hashable {
     /// - Parameter configKey: 配置对应 key
     /// - Parameter configKey: 配置对应 值
     /// - Returns Self: 返回构造好的配置对
-    public static func make<Value>(_ configKey: ConfigKey<Value>, _ value: Value) -> Self {
+    public static func make<Value: Sendable>(_ configKey: ConfigKey<Value>, _ value: Value) -> Self {
         return self.init(key: AnyHashable(configKey), name: configKey.name, value: value, valueType: Value.self)
     }
     
-    public static func make<Value>(keyPath configKeyPath: ConfigKeyPath<Value>, _ value: Value) -> Self {
+    public static func make<Value: Sendable>(keyPath configKeyPath: ConfigKeyPath<Value>, _ value: Value) -> Self {
         return configKeyPath.prevPaths.reversed().reduce(ConfigPair.make(configKeyPath.key, value)) { partialResult, path in
             ConfigPair.group(path, [partialResult])
         }

@@ -22,13 +22,17 @@ public extension ConfigKey where Value == String {
     static let appId = ConfigKey<String>("appId")
 }
 
+// MARK: - Config Set & Get
+
 public enum Config {
     /// 添加配置，建议只在启动阶段使用
     ///
     /// - Parameter value: 设置配置对应的值
     /// - Parameter key: 设置配置对应的 key
     public static func set<Value>(_ value: Value, for key: ConfigKey<Value>) {
-        g_appConfig[AnyHashable(key)] = value
+        DispatchQueue.syncOnConfigQueue {
+            g_appConfig[AnyHashable(key)] = value
+        }
     }
     
     /// 读取对应 key 的配置
@@ -36,7 +40,9 @@ public enum Config {
     /// - Parameter key: 读取配置使用的 key
     /// - Returns Value?: 返回需要的配置值，如果不存在返回 nil
     public static func value<Value>(for key: ConfigKey<Value>) -> Value? {
-        g_appConfig[AnyHashable(key)] as? Value
+        DispatchQueue.syncOnConfigQueue {
+            g_appConfig[AnyHashable(key)] as? Value
+        }
     }
     
     /// 读取对应 key 的配置
@@ -53,11 +59,13 @@ public enum Config {
     ///
     /// - Parameter value: 设置配置对应的值
     /// - Parameter keyPath: 设置配置对应的 KeyPath
-    public static func set<Value>(_ value: Value, with keyPath: ConfigKeyPath<Value>) {
+    public static func set<Value: Sendable>(_ value: Value, with keyPath: ConfigKeyPath<Value>) {
         let configPair = keyPath.prevPaths.reversed().reduce(ConfigPair.make(keyPath.key, value)) { partialResult, path in
             ConfigPair.group(path, [partialResult])
         }
-        merge(&g_appConfig, with: [configPair])
+        DispatchQueue.syncOnConfigQueue {
+            merge(&g_appConfig, with: [configPair])
+        }
     }
     
     /// 读取对应 keyPath 的配置
@@ -65,7 +73,9 @@ public enum Config {
     /// - Parameter keyPath: 读取配置使用的 KeyPath
     /// - Returns Value?: 返回需要的配置值，如果不存在返回 nil
     public static func value<Value>(with keyPath: ConfigKeyPath<Value>) -> Value? {
-        var topDic: [AnyHashable: Any]? = g_appConfig
+        var topDic: [AnyHashable: Any]? = DispatchQueue.syncOnConfigQueue {
+            g_appConfig
+        }
         _ = keyPath.prevPaths.first { name in
             if let nextDic = topDic?[AnyHashable(ConfigKey<[AnyHashable:Any]>(name))] as? [AnyHashable: Any] {
                 topDic = nextDic
@@ -89,8 +99,10 @@ public enum Config {
     }
 }
 
-/// 全局 app 配置信息（注意：这里有线程安全问题）
-var g_appConfig : [AnyHashable: Any] = {
+// MARK: - AppConfig
+
+/// 全局 app 配置信息，所有调用都会被包裹在 congfigQueue 中
+nonisolated(unsafe) var g_appConfig : [AnyHashable: Any] = {
     var aAppConfig : [AnyHashable: Any] = [:]
     
     // 读取项目配置文件
@@ -114,6 +126,7 @@ var g_appConfig : [AnyHashable: Any] = {
     return aAppConfig
 }()
 
+// MARK: - Load Config
 
 extension Config {
     
@@ -213,5 +226,25 @@ extension Config {
                 appConfig[configPair.key] = configPair.value
             }
         }
+    }
+}
+
+// MARK: - Config Queue
+
+extension DispatchQueue {
+    static let configQueueDispatchSpecificKey: DispatchSpecificKey<String> = .init()
+    /// Config 队列使用的锁
+    static let configQueue: DispatchQueue = {
+        let queue = DispatchQueue(label: "auto-config.config_queue")
+        queue.setSpecific(key: configQueueDispatchSpecificKey, value: queue.label)
+        return queue
+    }()
+    
+    /// 在 config 队列中执行
+    public static func syncOnConfigQueue<T>(execute work: () throws -> T) rethrows -> T {
+        if DispatchQueue.getSpecific(key: Self.configQueueDispatchSpecificKey) == Self.configQueue.label {
+            return try work()
+        }
+        return try Self.configQueue.sync(execute: work)
     }
 }

@@ -179,16 +179,16 @@ extension ConfigKey {
 }
 
 extension ConfigKeyPath where Value == String {
-    static var webAPIDeviceRegister1 = ConfigKey("WebAPI").append(ConfigKey<String>("DeviceRegister"))
+    static let webAPIDeviceRegister1 = ConfigKey("WebAPI").append(ConfigKey<String>("DeviceRegister"))
 }
 
 extension ConfigKeyPath where Value == String {
-    static var webAPIDeviceRegister: ConfigKeyPath<String> = .init(prevPaths: ["WebAPI"], key: .deviceRegister)
+    static let webAPIDeviceRegister: ConfigKeyPath<String> = .init(prevPaths: ["WebAPI"], key: .deviceRegister)
 }
 
 class UserConfig: ConfigProtocol {
 
-    static var configs: [ConfigPair] = [
+    static let configs: [ConfigPair] = [
         .make(.testConfig,  "test123"),
         .make(.appId,       "123"),
         .group("WebAPI", [
