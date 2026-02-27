@@ -13,7 +13,7 @@ let kBundleName = "CFBundleName"
 
 /// 配置协议
 public protocol ConfigProtocol {
-    /// 重新这个类设置各种配置
+    /// 重写这个类设置各种配置
     static var configs: [ConfigPair] { get }
 }
 
@@ -101,7 +101,7 @@ public enum Config {
 
 // MARK: - AppConfig
 
-/// 全局 app 配置信息，所有调用都会被包裹在 congfigQueue 中
+/// 全局 app 配置信息，所有调用都会被包裹在 configQueue 中
 nonisolated(unsafe) var g_appConfig : [AnyHashable: Any] = {
     var aAppConfig : [AnyHashable: Any] = [:]
     
@@ -219,9 +219,9 @@ extension Config {
         configPairs.forEach { configPair in
             if let nextValue = configPair.value as? [ConfigPair] {
                 // 递归
-                var nextConfidDic: [AnyHashable: Any] = appConfig[configPair.key] as? [AnyHashable: Any] ?? [:]
-                merge(&nextConfidDic, with: nextValue)
-                appConfig[ConfigKey<[AnyHashable:Any]>(configPair.name)] = nextConfidDic
+                var nextConfigDic: [AnyHashable: Any] = appConfig[configPair.key] as? [AnyHashable: Any] ?? [:]
+                merge(&nextConfigDic, with: nextValue)
+                appConfig[ConfigKey<[AnyHashable:Any]>(configPair.name)] = nextConfigDic
             } else {
                 appConfig[configPair.key] = configPair.value
             }
