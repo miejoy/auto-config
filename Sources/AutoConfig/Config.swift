@@ -73,19 +73,19 @@ public enum Config {
     /// - Parameter keyPath: 读取配置使用的 KeyPath
     /// - Returns Value?: 返回需要的配置值，如果不存在返回 nil
     public static func value<Value>(with keyPath: ConfigKeyPath<Value>) -> Value? {
-        var topDic: [AnyHashable: Any]? = DispatchQueue.syncOnConfigQueue {
-            g_appConfig
-        }
-        _ = keyPath.prevPaths.first { name in
-            if let nextDic = topDic?[AnyHashable(ConfigKey<[AnyHashable:Any]>(name))] as? [AnyHashable: Any] {
-                topDic = nextDic
-                return false
-            } else {
-                topDic = nil
-                return true
+        DispatchQueue.syncOnConfigQueue {
+            var topDic: [AnyHashable: Any]? = g_appConfig
+            _ = keyPath.prevPaths.first { name in
+                if let nextDic = topDic?[AnyHashable(ConfigKey<[AnyHashable:Any]>(name))] as? [AnyHashable: Any] {
+                    topDic = nextDic
+                    return false
+                } else {
+                    topDic = nil
+                    return true
+                }
             }
+            return topDic?[AnyHashable(keyPath.key)] as? Value
         }
-        return topDic?[AnyHashable(keyPath.key)] as? Value
     }
     
     /// 读取对应 keyPath 的配置
