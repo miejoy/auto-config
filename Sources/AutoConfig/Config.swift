@@ -140,7 +140,7 @@ extension Config {
                 if aBundle.bundlePath.hasSuffix(".xctest") {
                     if let bundleName = aBundle.infoDictionary?[kBundleName] as? String {
                         mainBundle = aBundle
-                        mainBundleName = bundleName.replacingOccurrences(of: " ", with: "_")
+                        mainBundleName = bundleName.replacing(" ", with: "_")
                     } else if let aClass = aBundle.principalClass {
                         mainBundle = aBundle
                         if let firstName = String(reflecting: aClass).split(separator: ".").first {

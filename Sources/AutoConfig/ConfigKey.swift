@@ -17,7 +17,7 @@ public struct ConfigKey<Value>: Hashable, CustomStringConvertible, Sendable {
     }
     
     public var description: String {
-        "\(name)<\(String(describing: Value.self).replacingOccurrences(of: "()", with: "Void"))>"
+        "\(name)<\(String(describing: Value.self).replacing("()", with: "Void"))>"
     }
 }
 
